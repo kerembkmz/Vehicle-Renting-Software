@@ -7,7 +7,16 @@
 </head>
 <body>
 <h1>Renting Page</h1>
-<p>This page is under development. It will be available soon.</p>
+<ul>
+  <li th:each="car : ${cars}">
+    <p th:text="${car.brand + ' - ' + car.color + ' - ' + car.pricePerDay + ' per day'}"></p>
+    <!-- Add other car details here -->
+  </li>
+  <li th:each="motorcycle : ${motorcycles}">
+    <p th:text="${motorcycle.brand + ' - ' + motorcycle.color + ' - ' + motorcycle.pricePerDay + ' per day'}"></p>
+    <!-- Add other motorcycle details here -->
+  </li>
+</ul>
 <!-- You can add more content or formatting as needed -->
 </body>
 </html>

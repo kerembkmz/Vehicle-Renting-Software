@@ -15,6 +15,7 @@ public class User {
     @Column(name = "username")
     private String name;
     private String password;
+    private Integer balance;
 
     public Long getId() {
         return id;
@@ -40,17 +41,33 @@ public class User {
         this.password = password;
     }
 
+    public Integer getBalance() {
+        return balance;
+    }
+
+    public void setBalance(Integer balance) {
+        this.balance = balance;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(password, user.password);
+        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(password, user.password) && Objects.equals(balance, user.balance);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, password);
+        return Objects.hash(id, name, password, balance);
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", balance=" + balance +
+                '}';
+    }
 }
