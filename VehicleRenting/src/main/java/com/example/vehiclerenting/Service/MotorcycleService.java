@@ -1,10 +1,12 @@
 package com.example.vehiclerenting.Service;
 
+import com.example.vehiclerenting.Models.Car;
 import com.example.vehiclerenting.Models.Motorcycle;
 import com.example.vehiclerenting.Repositories.MotorcycleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +34,11 @@ public class MotorcycleService {
 
     public void deleteMotorcycleById(Long id) {
         motorcycleRepository.deleteById(id);
+    }
+
+    public Iterable<Motorcycle> findAvailableMotorcyclesByDateRange(LocalDate startDate, LocalDate endDate) {
+        // Logic to fetch available cars between the provided dates
+        return motorcycleRepository.findAvailableMotorcyclesBetweenDates(startDate, endDate);
     }
 
     // Add other methods as needed

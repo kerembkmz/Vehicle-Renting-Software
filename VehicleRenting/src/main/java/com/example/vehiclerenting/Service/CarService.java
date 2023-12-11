@@ -5,6 +5,7 @@ import com.example.vehiclerenting.Repositories.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,5 +35,9 @@ public class CarService {
         carRepository.deleteById(id);
     }
 
+    public Iterable<Car> findAvailableCarsByDateRange(LocalDate startDate, LocalDate endDate) {
+        // Logic to fetch available cars between the provided dates
+        return carRepository.findAvailableCarsBetweenDates(startDate, endDate);
+    }
     // Add other methods as needed
 }

@@ -1,5 +1,8 @@
 package com.example.vehiclerenting.Controllers;
 
+import com.example.vehiclerenting.Models.UserContextHolder;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.ui.Model;
 import com.example.vehiclerenting.Models.Car;
 import com.example.vehiclerenting.Models.Motorcycle;
@@ -13,6 +16,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Controller
 public class UserController {
@@ -20,6 +27,8 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final CarService carService;
+
+
 
     private final MotorcycleService motorcycleService;
 
@@ -29,6 +38,7 @@ public class UserController {
         this.userService = userService;
         this.carService = carService;
         this.motorcycleService = motorcycleService;
+
     }
 
     @GetMapping("/register")
@@ -55,9 +65,10 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String loginUser(@RequestParam String username, @RequestParam String password) {
+    public String loginUser(@RequestParam String username, @RequestParam String password, RedirectAttributes redirectAttrs) {
         User loggedInUser = userService.authenticate(username, password);
         if (loggedInUser != null) {
+            redirectAttrs.addAttribute("userId", loggedInUser.getId());
             return "redirect:/renting";
         } else {
             return "redirect:/error?errorMessage=Login failed. Please try again.";
@@ -65,14 +76,32 @@ public class UserController {
     }
 
     @GetMapping("/renting")
-    public String getRentingPage(Model model) {
-        Iterable<Car> cars = carService.getAllCars();
-        Iterable<Motorcycle> motorcycles = motorcycleService.getAllMotorcycles();
-        model.addAttribute("cars", cars);
-        model.addAttribute("motorcycles", motorcycles);
+    public String getRentingPage(@RequestParam Long userId, Model model) {
+        Optional<User> loggedInUser = userRepository.findById(userId);
+        if (loggedInUser.isPresent()) {
+            Iterable<Car> cars = carService.getAllCars();
+            Iterable<Motorcycle> motorcycles = motorcycleService.getAllMotorcycles();
+            model.addAttribute("userBalance", loggedInUser.get().getBalance());
+            model.addAttribute("cars", cars);
+            model.addAttribute("motorcycles", motorcycles);
+            return "renting_page";
+        } else {
+            // Handle scenario when user is not found
+            return "redirect:/error?errorMessage=User not found";
+        }
+    }
+
+    @GetMapping("/search")
+    public String searchAvailableCars(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                      @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                      Model model) {
+
+        Iterable<Car> availableCars = carService.findAvailableCarsByDateRange(startDate, endDate);
+        Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesByDateRange(startDate, endDate);
+        // Add available cars to the model and return appropriate view
+        model.addAttribute("availableCars", availableCars);
+        model.addAttribute("availableMotors", availableMotorcycles);
         return "renting_page";
     }
 
-    // Other endpoints and logic related to user authentication
-    // ...
 }
