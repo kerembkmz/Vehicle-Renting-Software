@@ -13,13 +13,14 @@ public class UserService
         this.userRepository = userRepository;
     }
 
-    public User registerUser(String name, String password){
-        if (name == null || password == null){
+    public User registerUser(String name, String password, Integer balance){
+        if (name == null || password == null || balance == null){
             return null;
         } else {
             User user = new User();
             user.setName(name);
             user.setPassword(password);
+            user.setBalance(balance);
             return userRepository.save(user);
         }
     }

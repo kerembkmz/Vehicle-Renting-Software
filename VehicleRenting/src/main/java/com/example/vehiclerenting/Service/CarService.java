@@ -36,8 +36,8 @@ public class CarService {
     }
 
     public Iterable<Car> findAvailableCarsByDateRange(LocalDate startDate, LocalDate endDate) {
-        // Logic to fetch available cars between the provided dates
+
         return carRepository.findAvailableCarsBetweenDates(startDate, endDate);
     }
-    // Add other methods as needed
+
 }

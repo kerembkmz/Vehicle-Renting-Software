@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Page</title>
+</head>
+<body>
+<h1>Admin Page</h1>
+
+<h2>Cars</h2>
+<form action="/admin/cars/create" method="post">
+  Brand: <input type="text" name="brand"><br>
+  Color: <input type="text" name="color"><br>
+  Horsepower: <input type="number" name="horsepower"><br>
+  Priceperday: <input type="number" name="priceperday"><br>
+  Available: <input type="checkbox" name="available"><br>
+  StartAvailabilityDate: <input type="date" name="startAvailabilityDate"><br>
+  EndAvailabilityDate: <input type="date" name="endAvailabilityDate"><br>
+  <button type="submit">Create Car</button>
+</form>
+
+<h2>Motorcycles</h2>
+<form action="/admin/motorcycles/create" method="post">
+  Brand: <input type="text" name="brand"><br>
+  Color: <input type="text" name="color"><br>
+  Horsepower: <input type="number" name="horsepower"><br>
+  Priceperday: <input type="number" name="priceperday"><br>
+  Available: <input type="checkbox" name="available"><br>
+  StartAvailabilityDate: <input type="date" name="startAvailabilityDate"><br>
+  EndAvailabilityDate: <input type="date" name="endAvailabilityDate"><br>
+  <button type="submit">Create Motorcycle</button>
+</form>
+
+<h2>Users</h2>
+<form action="/admin/users/register" method="post">
+  Username: <input type="text" name="username"><br>
+  Password: <input type="text" name="password"><br>
+  Balance: <input type="number" name="balance"><br>
+  <button type="submit">Register User</button>
+</form>
+<script>
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const carCreated = urlParams.get('carCreated');
+
+    if (carCreated !== null) {
+      if (carCreated === 'true') {
+        alert('Car created successfully!');
+      } else {
+        alert('Failed to create car. Please try again.');
+      }
+    }
+  };
+</script>
+<script>
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const motorcycleCreated = urlParams.get('motorcycleCreated');
+
+    if (motorcycleCreated !== null) {
+      if (motorcycleCreated === 'true') {
+        alert('Motorcycle created successfully!');
+      } else {
+        alert('Failed to create motorcycle. Please try again.');
+      }
+    }
+  };
+</script>
+
+<script>
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userCreated = urlParams.get('userCreated');
+
+    if (userCreated !== null) {
+      if (userCreated === 'true') {
+        alert('User created successfully!');
+      } else {
+        alert('Failed to create user. Please try again.');
+      }
+    }
+  };
+</script>
+</body>
+</html>

@@ -15,8 +15,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "(c.startAvailabilityDate IS NULL OR c.endAvailabilityDate IS NULL OR (:startDate <= c.endAvailabilityDate AND :endDate >= c.startAvailabilityDate))")
     Iterable<Car> findAvailableCarsBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
-
-    // You can add custom query methods if needed
 }
 
 
