@@ -2,9 +2,48 @@
 <html>
 <head>
   <title>Admin Page</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-container {
+      width: 45%;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .form-container:nth-child(2n) {
+      margin-right: 0;
+    }
+    .form-container h2 {
+      margin-bottom: 10px;
+    }
+    .header-signiture {
+      display: flex;
+      justify-content: center;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adjust shadow properties as needed */
+    }
+    .delete-form-container {
+      width: 45%;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .delete-form-container h3 {
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-<h1>Admin Page</h1>
+<div class="header-signiture">
+  <h1>Admin Page</h1>
+</div>
+<div class="form-container">
 
 <h2>Cars</h2>
 <form action="/admin/cars/create" method="post">
@@ -37,10 +76,50 @@
   Balance: <input type="number" name="balance"><br>
   <button type="submit">Register User</button>
 </form>
+</div>
+
+<div class="delete-form-container">
+  <h3>Delete Cars</h3>
+  <form action="/admin/cars/delete" method="post">
+    Brand: <input type="text" name="brand"><br>
+    Color: <input type="text" name="color"><br>
+    Horsepower: <input type="number" name="horsepower"><br>
+    Priceperday: <input type="number" name="priceperday"><br>
+    Available: <input type="checkbox" name="available"><br>
+    StartAvailabilityDate: <input type="date" name="startAvailabilityDate"><br>
+    EndAvailabilityDate: <input type="date" name="endAvailabilityDate"><br>
+    <button type="submit">Delete Cars</button>
+  </form>
+  <h3>Delete Motorcycle by Attributes</h3>
+  <form action="/admin/motorcycles/delete" method="post">
+    Brand: <input type="text" name="brand"><br>
+    Color: <input type="text" name="color"><br>
+    Horsepower: <input type="number" name="horsepower"><br>
+    Priceperday: <input type="number" name="priceperday"><br>
+    Available: <input type="checkbox" name="available"><br>
+    StartAvailabilityDate: <input type="date" name="startAvailabilityDate"><br>
+    EndAvailabilityDate: <input type="date" name="endAvailabilityDate"><br>
+    <button type="submit">Delete Motorcycles</button>
+  </form>
+<h3>Delete User</h3>
+<form action="/admin/users/delete" method="post">
+  Username: <input type="text" name="username"><br>
+  Password: <input type="text" name="password"><br>
+  Balance: <input type="number" name="balance"><br>
+  <button type="submit">Delete User</button>
+</form>
+</div>
 <script>
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
+
     const carCreated = urlParams.get('carCreated');
+    const carDeleted = urlParams.get('carDeleted')
+    const motorcycleCreated = urlParams.get('motorcycleCreated');
+    const motorcycleDeleted = urlParams.get('motorcycleDeleted');
+    const userCreated = urlParams.get('userCreated');
+    const userDeleted = urlParams.get('userDeleted');
+
 
     if (carCreated !== null) {
       if (carCreated === 'true') {
@@ -49,13 +128,14 @@
         alert('Failed to create car. Please try again.');
       }
     }
-  };
-</script>
-<script>
-  window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const motorcycleCreated = urlParams.get('motorcycleCreated');
 
+    if (carDeleted !== null) {
+      if (carDeleted === 'true') {
+        alert('Car deleted successfully!');
+      } else {
+        alert('Failed to delete car. Please try again.');
+      }
+    }
     if (motorcycleCreated !== null) {
       if (motorcycleCreated === 'true') {
         alert('Motorcycle created successfully!');
@@ -63,13 +143,13 @@
         alert('Failed to create motorcycle. Please try again.');
       }
     }
-  };
-</script>
-
-<script>
-  window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userCreated = urlParams.get('userCreated');
+    if (motorcycleDeleted !== null) {
+      if (motorcycleDeleted === 'true') {
+        alert('Motorcycle deleted successfully!');
+      } else {
+        alert('Failed to delete motorcycle. Please try again.');
+      }
+    }
 
     if (userCreated !== null) {
       if (userCreated === 'true') {
@@ -78,7 +158,17 @@
         alert('Failed to create user. Please try again.');
       }
     }
+    if (userDeleted !== null) {
+      if (userDeleted === 'true') {
+        alert('User deleted successfully!');
+      } else {
+        alert('Failed to delete user. Please try again.');
+      }
+    }
+
+
   };
 </script>
+
 </body>
 </html>
