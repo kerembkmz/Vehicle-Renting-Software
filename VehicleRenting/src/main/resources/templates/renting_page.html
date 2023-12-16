@@ -26,12 +26,30 @@
   <label for="endDate">End Date:</label>
   <input type="date" id="endDate" name="endDate" required>
 
+  <label for="brand">Brand:</label>
+  <input type="text" id="brand" name="brand">
+
+  <label for="color">Color:</label>
+  <input type="text" id="color" name="color">
+
+  <label for="minHorsepower">Min Horsepower:</label>
+  <input type="number" id="minHorsepower" name="minHorsepower">
+
+  <label for="maxPricePerDay">Max Price per Day:</label>
+  <input type="number" id="maxPricePerDay" name="maxPricePerDay">
+
+  <label for="availability">Availability:</label>
+  <select id="availability" name="availability">
+    <option value="true">Available</option>
+    <option value="false">Unavailable</option>
+  </select>
+
   <button type="submit">Search</button>
 </form>
 
 <ul>
   <li th:each="car : ${availableCars}">
-    <p th:text="${car.brand + ' - ' + car.color + ' - ' + car.pricePerDay + ' per day'}"></p>
+    <p th:text="${car.brand + ' - ' + car.color + ' - ' + car.pricePerDay + ' per day' + ' - ' + car.horsepower + ' hp ' + ' - ' +  (car.available ? 'Available' : 'Not available')}"></p>
     <form th:action="@{/rent}" method="post">
       <input type="hidden" name="carId" th:value="${car.id}" />
       <button type="submit">Rent</button>
@@ -39,7 +57,7 @@
     <!-- Add other car details here -->
   </li>
   <li th:each="motorcycle : ${availableMotors}">
-    <p th:text="${motorcycle.brand + ' - ' + motorcycle.color + ' - ' + motorcycle.pricePerDay + ' per day'}"></p>
+    <p th:text="${motorcycle.brand + ' - ' + motorcycle.color + ' - ' + motorcycle.pricePerDay + ' per day' + ' - ' + motorcycle.horsepower + ' hp ' + ' - ' +  (motorcycle.available ? 'Available' : 'Not available')}"></p>
     <form th:action="@{/rent}" method="post">
       <input type="hidden" name="motorcycleId" th:value="${motorcycle.id}" />
       <button type="submit">Rent</button>

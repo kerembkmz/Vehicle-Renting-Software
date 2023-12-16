@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CarService {
@@ -51,7 +52,6 @@ public class CarService {
 
         StringBuilder queryBuilder = new StringBuilder("DELETE FROM Car m WHERE 1 = 1");
 
-        // Append conditions based on the provided attributes
         if (brand != null) {
             queryBuilder.append(" AND m.brand = :brand");
         }
@@ -76,7 +76,6 @@ public class CarService {
 
         Query query = entityManager.createQuery(queryBuilder.toString());
 
-        // Set parameters for the conditions
         if (brand != null) {
             query.setParameter("brand", brand);
         }
@@ -102,4 +101,20 @@ public class CarService {
         int deletedCount = query.executeUpdate();
         return deletedCount;
     }
+
+    public Iterable<Car> findAvailableCarsWithFilters(LocalDate startDate, LocalDate endDate, String brand, String color, Integer minHorsepower, Integer maxPricePerDay, Boolean availability) {
+        List<Car> availableCars = (List<Car>) carRepository.findAvailableCarsBetweenDates(startDate, endDate);
+
+        availableCars = availableCars.stream()
+                .filter(car ->
+                        (brand == null || brand.isEmpty() || car.getBrand().equalsIgnoreCase(brand)) &&
+                                (color == null || color.isEmpty() || car.getColor().equalsIgnoreCase(color)) &&
+                                (minHorsepower == null || car.getHorsepower() >= minHorsepower) &&
+                                (maxPricePerDay == null || car.getPricePerDay() <= maxPricePerDay) &&
+                                (availability == null || car.isAvailable() == availability))
+                .collect(Collectors.toList());
+
+        return availableCars;
+    }
+
 }

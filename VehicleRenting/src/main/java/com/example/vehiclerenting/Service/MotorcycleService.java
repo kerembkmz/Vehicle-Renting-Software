@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MotorcycleService {
@@ -54,7 +55,6 @@ public class MotorcycleService {
 
         StringBuilder queryBuilder = new StringBuilder("DELETE FROM Motorcycle m WHERE 1 = 1");
 
-        // Append conditions based on the provided attributes
         if (brand != null) {
             queryBuilder.append(" AND m.brand = :brand");
         }
@@ -79,7 +79,6 @@ public class MotorcycleService {
 
         Query query = entityManager.createQuery(queryBuilder.toString());
 
-        // Set parameters for the conditions
         if (brand != null) {
             query.setParameter("brand", brand);
         }
@@ -104,5 +103,27 @@ public class MotorcycleService {
 
         int deletedCount = query.executeUpdate();
         return deletedCount;
+    }
+
+    public Iterable<Motorcycle> findAvailableMotorcyclesWithFilters(LocalDate startDate, LocalDate endDate, String brand, String color, Integer minHorsepower, Integer maxPricePerDay, Boolean availability) {
+        List<Motorcycle> availableMotorcycles = (List<Motorcycle>) motorcycleRepository.findAvailableMotorcyclesBetweenDates(startDate, endDate);
+
+        if (brand != null && !brand.isEmpty()) {
+            availableMotorcycles = availableMotorcycles.stream().filter(motorcycle -> motorcycle.getBrand().equalsIgnoreCase(brand)).collect(Collectors.toList());
+        }
+        if (color != null && !color.isEmpty()) {
+            availableMotorcycles = availableMotorcycles.stream().filter(motorcycle -> motorcycle.getColor().equalsIgnoreCase(color)).collect(Collectors.toList());
+        }
+        if (minHorsepower != null) {
+            availableMotorcycles = availableMotorcycles.stream().filter(motorcycle -> motorcycle.getHorsepower() >= minHorsepower).collect(Collectors.toList());
+        }
+        if (maxPricePerDay != null) {
+            availableMotorcycles = availableMotorcycles.stream().filter(motorcycle -> motorcycle.getPricePerDay() <= maxPricePerDay).collect(Collectors.toList());
+        }
+        if (availability != null) {
+            availableMotorcycles = availableMotorcycles.stream().filter(motorcycle -> motorcycle.isAvailable() == availability).collect(Collectors.toList());
+        }
+
+        return availableMotorcycles;
     }
 }

@@ -26,9 +26,6 @@ public class UserController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final CarService carService;
-
-
-
     private final MotorcycleService motorcycleService;
 
     @Autowired
@@ -232,27 +229,33 @@ public class UserController {
         }
     }
 
-
-
-
-
     @GetMapping("/search")
-    public String searchAvailableCars(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                      @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                                      HttpSession session,
-                                      Model model) {
+    public String searchAvailableCars(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "color", required = false) String color,
+            @RequestParam(value = "minHorsepower", required = false) Integer minHorsepower,
+            @RequestParam(value = "maxPricePerDay", required = false) Integer maxPricePerDay,
+            @RequestParam(value = "availability", required = false) String availabilityParam,
+            HttpSession session,
+            Model model) {
 
+        Boolean availability = null;
+        if (availabilityParam != null && !availabilityParam.isEmpty()) {
+            availability = Boolean.parseBoolean(availabilityParam); // Convert to Boolean
+        }
 
         Long id = (Long) session.getAttribute("userId");
         Optional<User> loggedInUser = userRepository.findById(id);
         if (loggedInUser.isPresent()) {
-            Iterable<Car> availableCars = carService.findAvailableCarsByDateRange(startDate, endDate);
-            Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesByDateRange(startDate, endDate);
+            Iterable<Car> availableCars = carService.findAvailableCarsWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
+            Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
             model.addAttribute("userBalance", loggedInUser.get().getBalance());
             model.addAttribute("availableCars", availableCars);
             model.addAttribute("availableMotors", availableMotorcycles);
             return "renting_page";
-        }else {
+        } else {
             return "redirect:/error?errorMessage=User not found";
         }
     }
