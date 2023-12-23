@@ -8,7 +8,6 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 
-
 @Service
 public class UserService
 {
@@ -69,4 +68,30 @@ public class UserService
         }
         return false;
     }
+
+    public boolean checkUserBalance(Long userId, int rentalCost) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return false;
+        }
+        return user.getBalance() >= rentalCost;
+    }
+
+    @Transactional
+    public void updateUserBalance(Long userId, int amount) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return;
+        }
+
+        int newBalance = user.getBalance() - amount;
+        if (newBalance < 0) {
+            return;
+        }
+
+        user.setBalance(newBalance);
+        userRepository.save(user);
+    }
+
+
 }

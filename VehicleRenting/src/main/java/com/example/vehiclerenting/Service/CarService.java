@@ -1,7 +1,9 @@
 package com.example.vehiclerenting.Service;
 
 import com.example.vehiclerenting.Models.Car;
+import com.example.vehiclerenting.Models.Rental;
 import com.example.vehiclerenting.Repositories.CarRepository;
+import com.example.vehiclerenting.Repositories.RentalRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,11 +21,16 @@ public class CarService {
 
     private final CarRepository carRepository;
     private final EntityManager entityManager;
+    private final UserService userService;
+    private final RentalRepository rentalRepository;
 
     @Autowired
-    public CarService(CarRepository carRepository , EntityManager entityManager) {
+    public CarService(CarRepository carRepository, EntityManager entityManager,
+                      UserService userService, RentalRepository rentalRepository) {
         this.carRepository = carRepository;
         this.entityManager = entityManager;
+        this.userService = userService;
+        this.rentalRepository = rentalRepository;
     }
 
     public List<Car> getAllCars() {
@@ -117,4 +125,48 @@ public class CarService {
         return availableCars;
     }
 
+    public List<String> getAvailableBrands() {
+        return carRepository.findDistinctBrands();
+    }
+    public List<String> getAvailableColor() {
+        return carRepository.findDistinctColor();
+    }
+    public List<String> horsePower() {
+        return carRepository.findDistincthorsePower();
+    }
+
+    public Integer getDailyRateById(Long carId) {
+        Optional<Car> car = carRepository.findById(carId);
+        if (car.isPresent()) {
+            return car.get().getPricePerDay();
+        } else {
+            throw new IllegalStateException("Car with the specified ID not found");
+        }
+    }
+    public boolean rentCar(Long carId, LocalDate startDate, LocalDate endDate, Long userId) {
+        Optional<Car> carOpt = carRepository.findById(carId);
+        if (carOpt.isEmpty() || !carOpt.get().isAvailable()) {
+            return false;
+        }
+
+        Car car = carOpt.get();
+        int rentalCost = getDailyRateById(carId) * (int) ChronoUnit.DAYS.between(startDate, endDate);
+
+        if (!userService.checkUserBalance(userId, rentalCost)) {
+            return false;
+        }
+
+        userService.updateUserBalance(userId, -rentalCost);
+        car.setAvailable(false);
+        carRepository.save(car);
+
+        Rental rental = new Rental();
+        rental.setCarId(carId);
+        rental.setUserId(userId);
+        rental.setStartDate(startDate);
+        rental.setEndDate(endDate);
+        rentalRepository.save(rental);
+
+        return true;
+    }
 }

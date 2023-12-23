@@ -48,23 +48,41 @@
 </form>
 
 <ul>
+  <!-- List of available cars -->
   <li th:each="car : ${availableCars}">
     <p th:text="${car.brand + ' - ' + car.color + ' - ' + car.pricePerDay + ' per day' + ' - ' + car.horsepower + ' hp ' + ' - ' +  (car.available ? 'Available' : 'Not available')}"></p>
-    <form th:action="@{/rent}" method="post">
-      <input type="hidden" name="carId" th:value="${car.id}" />
+    <!-- Rent form for each car -->
+    <form th:action="@{/rentVehicle}" method="post">
+      <input type="hidden" name="vehicleId" th:value="${car.id}" />
+      <input type="hidden" name="vehicleType" value="car" />
+      <label>
+        <input type="date" name="startDate" required>
+      </label>
+      <label>
+        <input type="date" name="endDate" required>
+      </label>
       <button type="submit">Rent</button>
     </form>
-    <!-- Add other car details here -->
   </li>
+  <!-- List of available motorcycles -->
   <li th:each="motorcycle : ${availableMotors}">
     <p th:text="${motorcycle.brand + ' - ' + motorcycle.color + ' - ' + motorcycle.pricePerDay + ' per day' + ' - ' + motorcycle.horsepower + ' hp ' + ' - ' +  (motorcycle.available ? 'Available' : 'Not available')}"></p>
-    <form th:action="@{/rent}" method="post">
-      <input type="hidden" name="motorcycleId" th:value="${motorcycle.id}" />
+    <!-- Rent form for each motorcycle -->
+    <form th:action="@{/rentVehicle}" method="post">
+      <input type="hidden" name="vehicleId" th:value="${motorcycle.id}" />
+      <input type="hidden" name="vehicleType" value="motorcycle" />
+      <label>
+        <input type="date" name="startDate" required>
+      </label>
+      <label>
+        <input type="date" name="endDate" required>
+      </label>
       <button type="submit">Rent</button>
     </form>
-    <!-- Add other motorcycle details here -->
   </li>
 </ul>
+
 <!-- You can add more content or formatting as needed -->
+
 </body>
 </html>

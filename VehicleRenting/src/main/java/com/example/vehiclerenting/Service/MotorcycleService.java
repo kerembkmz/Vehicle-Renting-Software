@@ -2,7 +2,9 @@ package com.example.vehiclerenting.Service;
 
 import com.example.vehiclerenting.Models.Car;
 import com.example.vehiclerenting.Models.Motorcycle;
+import com.example.vehiclerenting.Models.Rental;
 import com.example.vehiclerenting.Repositories.MotorcycleRepository;
+import com.example.vehiclerenting.Repositories.RentalRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +24,15 @@ public class MotorcycleService {
     private final MotorcycleRepository motorcycleRepository;
     private final EntityManager entityManager;
 
-    @Autowired
-    public MotorcycleService(MotorcycleRepository motorcycleRepository, EntityManager entityManager) {
+    private final UserService userService;
+    private final RentalRepository rentalRepository;
+
+    public MotorcycleService(MotorcycleRepository motorcycleRepository, EntityManager entityManager,
+                             UserService userService, RentalRepository rentalRepository) {
         this.motorcycleRepository = motorcycleRepository;
         this.entityManager = entityManager;
+        this.userService = userService;
+        this.rentalRepository = rentalRepository;
     }
 
     public List<Motorcycle> getAllMotorcycles() {
@@ -126,4 +134,42 @@ public class MotorcycleService {
 
         return availableMotorcycles;
     }
+
+    public Integer getDailyRateById(Long motorcycleId) {
+        Optional<Motorcycle> motorcycle = motorcycleRepository.findById(motorcycleId);
+        if (motorcycle.isPresent()) {
+            return motorcycle.get().getPricePerDay();
+        } else {
+            throw new IllegalStateException("Motorcycle with the specified ID not found");
+        }
+    }
+
+    public boolean rentMotorcycle(Long motorcycleId, LocalDate startDate, LocalDate endDate, Long userId) {
+        Optional<Motorcycle> motorcycleOpt = motorcycleRepository.findById(motorcycleId);
+        if (motorcycleOpt.isEmpty() || !motorcycleOpt.get().isAvailable()) {
+            return false;
+        }
+
+        Motorcycle motorcycle = motorcycleOpt.get();
+        int rentalCost = getDailyRateById(motorcycleId) * (int) ChronoUnit.DAYS.between(startDate, endDate);
+
+        if (!userService.checkUserBalance(userId, rentalCost)) {
+            return false;
+        }
+
+        userService.updateUserBalance(userId, -rentalCost);
+        motorcycle.setAvailable(false);
+        motorcycleRepository.save(motorcycle);
+
+        Rental rental = new Rental();
+        rental.setMotorcycleId(motorcycleId);
+        rental.setUserId(userId);
+        rental.setStartDate(startDate);
+        rental.setEndDate(endDate);
+        rentalRepository.save(rental);
+
+        return true;
+    }
+
+
 }

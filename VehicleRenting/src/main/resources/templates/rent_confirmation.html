@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rental Confirmation</title>
+</head>
+<body>
+<h1>Rental Confirmation</h1>
+<p th:text="${message}">Vehicle has been successfully rented.</p>
+<div>
+    <p><strong>Rental ID:</strong> <span th:text="${rentalDetails.id}">0</span></p>
+    <p><strong>User ID:</strong> <span th:text="${rentalDetails.userId}">0</span></p>
+    <p><strong>Vehicle ID:</strong>
+        <span th:if="${rentalDetails.carId != null}" th:text="${rentalDetails.carId}">Car ID</span>
+        <span th:if="${rentalDetails.motorcycleId != null}" th:text="${rentalDetails.motorcycleId}">Motorcycle ID</span>
+    </p>
+    <p><strong>Start Date:</strong> <span th:text="${rentalDetails.startDate}">Start Date</span></p>
+    <p><strong>End Date:</strong> <span th:text="${rentalDetails.endDate}">End Date</span></p>
+</div>
+</body>
+</html>

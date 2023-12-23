@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Renting Page</title>
+</head>
+<body>
+<h1>Renting Page</h1>
+<div th:if="${not #lists.isEmpty(getAllCars)}">
+    <h2>Available Cars</h2>
+    <div th:each="car : ${allCars}" th:if="${car.available}">
+        <p th:text="${car.brand} + ' - ' + ${car.color} + ' - ' + ${car.horsepower} + 'hp - $' + ${car.pricePerDay} + '/day'"></p>
+        <form th:action="@{/rentVehicle}" method="post">
+            <input type="hidden" name="vehicleId" th:value="${car.id}" />
+            <input type="hidden" name="vehicleType" value="car" />
+
+            <!-- Assuming you have a way to get the user ID (e.g., from the logged-in user session) -->
+            <input type="hidden" name="userId" th:value="${userId}" />
+
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required />
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required />
+
+            <button type="submit">Rent</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${not #lists.isEmpty(allMotorcycles)}">
+    <h2>Available Motorcycles</h2>
+    <div th:each="motorcycle : ${allMotorcycles}">
+        <p th:text="${motorcycle.brand} + ' - ' + ${motorcycle.model}"></p>
+        <form th:action="@{/rentVehicle}" method="post">
+            <input type="hidden" name="vehicleId" th:value="${motorcycle.id}" />
+            <input type="hidden" name="vehicleType" value="motorcycle" />
+            <input type="hidden" name="userId" th:value="${user.id}" />
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required />
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate" required />
+
+            <button type="submit">Rent</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
