@@ -1,5 +1,7 @@
 package com.example.vehiclerenting.Controllers;
 
+import com.example.vehiclerenting.Models.Rental;
+import com.example.vehiclerenting.Service.RentalService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
@@ -27,14 +30,15 @@ public class UserController {
     private final UserService userService;
     private final CarService carService;
     private final MotorcycleService motorcycleService;
+    private final RentalService rentalService;
 
     @Autowired
-    public UserController(UserRepository userRepository, UserService userService, CarService carService, MotorcycleService motorcycleService) {
+    public UserController(UserRepository userRepository, UserService userService, CarService carService, MotorcycleService motorcycleService, RentalService rentalService) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.carService = carService;
         this.motorcycleService = motorcycleService;
-
+        this.rentalService = rentalService;
     }
 
     @GetMapping("/register")
@@ -126,7 +130,51 @@ public class UserController {
         }
 
     }
+    @PostMapping("/rentVehicle")
+    public ModelAndView rentVehicle(
+            @RequestParam("vehicleId") Long vehicleId,
+            @RequestParam("vehicleType") String vehicleType,
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpSession session
 
+    ) {
+        ModelAndView modelAndView = new ModelAndView();
+
+        Long userId = (Long) session.getAttribute("userId");
+        boolean rentalSuccess;
+        Rental rental = new Rental();
+        rental.setStartDate(startDate);
+        rental.setEndDate(endDate);
+        rental.setUserId(userId);
+
+        // Assuming you have a RentalService to manage rental operations
+        if ("car".equals(vehicleType)) {
+            rentalSuccess = rentalService.rentCar(vehicleId, userId, startDate, endDate);
+            rental.setCarId(vehicleId);
+        } else if ("motorcycle".equals(vehicleType)) {
+            rentalSuccess = rentalService.rentMotorcycle(vehicleId, userId, startDate, endDate);
+            rental.setMotorcycleId(vehicleId);
+        } else {
+            modelAndView.setViewName("renting_page");
+            modelAndView.addObject("error", "Invalid vehicle type.");
+            return modelAndView;
+        }
+
+        if (rentalSuccess) {
+            // Persist the rental record if rental was successful
+            rentalService.saveRental(rental);
+
+            modelAndView.setViewName("rent_confirmation");
+            modelAndView.addObject("message", "Vehicle has been successfully rented.");
+            modelAndView.addObject("rentalDetails", rental);
+        } else {
+            modelAndView.setViewName("renting_page");
+            modelAndView.addObject("error", "Rental process failed.");
+        }
+
+        return modelAndView;
+    }
     @PostMapping("/admin/users/register")
     public String registerUser(@RequestParam String username,
                                @RequestParam String password,
@@ -144,6 +192,7 @@ public class UserController {
             return "redirect:/adminPage?userCreated=false";
         }
     }
+
 
     @PostMapping("/admin/cars/create")
     public String createCar(@RequestParam String brand,
