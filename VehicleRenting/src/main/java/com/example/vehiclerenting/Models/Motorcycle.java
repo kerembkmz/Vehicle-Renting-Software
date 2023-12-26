@@ -2,6 +2,7 @@ package com.example.vehiclerenting.Models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -21,6 +22,9 @@ public class Motorcycle {
     private LocalDate startAvailabilityDate;
 
     private LocalDate endAvailabilityDate;
+
+    @OneToMany(mappedBy = "motorcycle")
+    private List<Rental> rentals;
 
 
     public Long getId() {
@@ -94,6 +98,14 @@ public class Motorcycle {
         this.endAvailabilityDate = endAvailabilityDate;
     }
 
+    public List<Rental> getRentals() {
+        return rentals;
+    }
+
+    public void setRentals(List<Rental> rentals) {
+        this.rentals = rentals;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -120,6 +132,8 @@ public class Motorcycle {
                 ", endAvailabilityDate=" + endAvailabilityDate +
                 '}';
     }
+
+
 
     // Implement setters, constructors, and other necessary methods
 }

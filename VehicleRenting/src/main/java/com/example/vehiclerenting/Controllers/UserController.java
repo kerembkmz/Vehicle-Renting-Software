@@ -1,6 +1,7 @@
 package com.example.vehiclerenting.Controllers;
 
 import com.example.vehiclerenting.Models.Rental;
+import com.example.vehiclerenting.Repositories.RentalRepository;
 import com.example.vehiclerenting.Service.RentalService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,20 +22,23 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
 public class UserController {
 
     private final UserRepository userRepository;
+    private final RentalRepository rentalRepository;
     private final UserService userService;
     private final CarService carService;
     private final MotorcycleService motorcycleService;
     private final RentalService rentalService;
 
     @Autowired
-    public UserController(UserRepository userRepository, UserService userService, CarService carService, MotorcycleService motorcycleService, RentalService rentalService) {
+    public UserController(UserRepository userRepository, RentalRepository rentalRepository, UserService userService, CarService carService, MotorcycleService motorcycleService, RentalService rentalService) {
         this.userRepository = userRepository;
+        this.rentalRepository = rentalRepository;
         this.userService = userService;
         this.carService = carService;
         this.motorcycleService = motorcycleService;
@@ -141,20 +145,22 @@ public class UserController {
     ) {
         ModelAndView modelAndView = new ModelAndView();
 
+
         Long userId = (Long) session.getAttribute("userId");
+        User user =  userRepository.findById(userId).get();
         boolean rentalSuccess;
-        Rental rental = new Rental();
+        Rental rental = new Rental(user);
         rental.setStartDate(startDate);
         rental.setEndDate(endDate);
-        rental.setUserId(userId);
+
 
         // Assuming you have a RentalService to manage rental operations
         if ("car".equals(vehicleType)) {
             rentalSuccess = rentalService.rentCar(vehicleId, userId, startDate, endDate);
-            rental.setCarId(vehicleId);
+            rental.setCar(carService.getCarById(vehicleId).get());
         } else if ("motorcycle".equals(vehicleType)) {
             rentalSuccess = rentalService.rentMotorcycle(vehicleId, userId, startDate, endDate);
-            rental.setMotorcycleId(vehicleId);
+            rental.setMotorcycle(motorcycleService.getMotorcycleById(vehicleId).get());
         } else {
             modelAndView.setViewName("renting_page");
             modelAndView.addObject("error", "Invalid vehicle type.");
@@ -167,7 +173,7 @@ public class UserController {
 
             modelAndView.setViewName("rent_confirmation");
             modelAndView.addObject("message", "Vehicle has been successfully rented.");
-            modelAndView.addObject("rentalDetails", rental);
+            modelAndView.addObject("rental", rental);
         } else {
             modelAndView.setViewName("renting_page");
             modelAndView.addObject("error", "Rental process failed.");
@@ -307,6 +313,17 @@ public class UserController {
         } else {
             return "redirect:/error?errorMessage=User not found";
         }
+    }
+
+    @GetMapping("/rental_history")
+    public String getRentalHistory(Model model, HttpSession session) {
+        Long user_id = (Long) session.getAttribute("userId");
+
+        List<Rental> rentalHistory = rentalRepository.findByUser_Id(user_id);
+
+        model.addAttribute("rentalHistory", rentalHistory);
+
+        return "rental_history";
     }
 
 }

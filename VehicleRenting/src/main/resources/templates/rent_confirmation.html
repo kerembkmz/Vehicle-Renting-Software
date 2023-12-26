@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Rental Confirmation</title>
@@ -8,17 +8,17 @@
 <h1>Rental Confirmation</h1>
 <p th:text="${message}">Vehicle has been successfully rented.</p>
 <div>
-    <p><strong>Rental ID:</strong> <span th:text="${rentalDetails.id}">0</span></p>
-    <p><strong>User ID:</strong> <span th:text="${rentalDetails.userId}">0</span></p>
+    <p><strong>Rental ID:</strong> <span th:text="${rental.id}">0</span></p>
+    <p><strong>User ID:</strong> <span th:text="${rental.user.id}">0</span></p>
     <p><strong>Vehicle ID:</strong>
-        <span th:if="${rentalDetails.carId != null}" th:text="${rentalDetails.carId}">Car ID</span>
-        <span th:if="${rentalDetails.motorcycleId != null}" th:text="${rentalDetails.motorcycleId}">Motorcycle ID</span>
+        <span th:if="${rental.car != null}" th:text="${rental.car.id}">Car ID</span>
+        <span th:if="${rental.motorcycle != null}" th:text="${rental.motorcycle.id}">Motorcycle ID</span>
     </p>
-    <p><strong>Start Date:</strong> <span th:text="${rentalDetails.startDate}">Start Date</span></p>
-    <p><strong>End Date:</strong> <span th:text="${rentalDetails.endDate}">End Date</span></p>
+    <p><strong>Start Date:</strong> <span th:text="${rental.startDate}">Start Date</span></p>
+    <p><strong>End Date:</strong> <span th:text="${rental.endDate}">End Date</span></p>
 </div>
 <form action="/renting" method="get">
-    <input type="hidden" name="userId" th:value="${rentalDetails.userId}">
+    <input type="hidden" name="userId" th:value="${rental.user.id}">
     <button type="submit">Go Back</button>
 </form>
 </body>

@@ -2,6 +2,7 @@ package com.example.vehiclerenting.Models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -20,6 +21,9 @@ public class Car {
     private int horsepower;
     private int pricePerDay;
     private boolean available;
+
+    @OneToMany(mappedBy = "car")
+    private List<Rental> rentals;
 
 
     private LocalDate startAvailabilityDate;
@@ -65,6 +69,14 @@ public class Car {
 
     public void setPricePerDay(int pricePerDay) {
         this.pricePerDay = pricePerDay;
+    }
+
+    public List<Rental> getRentals() {
+        return rentals;
+    }
+
+    public void setRentals(List<Rental> rentals) {
+        this.rentals = rentals;
     }
 
     public boolean isAvailable() {
@@ -117,4 +129,5 @@ public class Car {
                 ", endAvailabilityDate=" + endAvailabilityDate +
                 '}';
     }
+
 }

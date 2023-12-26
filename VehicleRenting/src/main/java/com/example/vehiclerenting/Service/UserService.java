@@ -1,21 +1,28 @@
 package com.example.vehiclerenting.Service;
 
+import com.example.vehiclerenting.Models.Rental;
 import com.example.vehiclerenting.Models.User;
+import com.example.vehiclerenting.Repositories.RentalRepository;
 import com.example.vehiclerenting.Repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class UserService
 {
     private final UserRepository userRepository;
+
+    private final RentalRepository rentalRepository;
     private final EntityManager entityManager;
 
-    public UserService(UserRepository userRepository, EntityManager entityManager){
+    public UserService(UserRepository userRepository, RentalRepository rentalRepository, EntityManager entityManager){
         this.userRepository = userRepository;
+        this.rentalRepository = rentalRepository;
         this.entityManager = entityManager;
     }
 
@@ -91,6 +98,10 @@ public class UserService
 
         user.setBalance(newBalance);
         userRepository.save(user);
+    }
+
+    public List<Rental> getRentalHistory(Long userId) {
+        return rentalRepository.findByUser_Id(userId);
     }
 
 

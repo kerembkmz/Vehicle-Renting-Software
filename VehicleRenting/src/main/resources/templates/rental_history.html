@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rental History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .rental-item {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .go-back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .go-back-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h1>Rental History</h1>
+
+<!-- Go Back Button -->
+<a th:href="@{/renting}" class="go-back-btn">Go Back</a>
+
+<!-- Iterate through rental history and display each rental item -->
+<table>
+    <tr>
+        <th>Rental ID</th>
+        <th>Vehicle Type</th>
+        <th>Vehicle Details</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+    </tr>
+    <tr th:each="rental : ${rentalHistory}" class="rental-item">
+        <td th:text="${rental.id}"></td>
+        <td th:text="${rental.car != null ? 'Car' : 'Motorcycle'}"></td>
+        <td>
+            <!-- Display car details if it's a car -->
+            <span th:if="${rental.car != null}" th:text="${rental.car.brand + ' - ' + rental.car.color + ' - ' + rental.car.horsepower + 'hp'}"></span>
+
+            <!-- Display motorcycle details if it's a motorcycle -->
+            <span th:if="${rental.motorcycle != null}" th:text="${rental.motorcycle.brand + ' - ' + rental.motorcycle.color + ' - ' + rental.motorcycle.horsepower + 'hp'}"></span>
+        </td>
+        <td th:text="${rental.startDate}"></td>
+        <td th:text="${rental.endDate}"></td>
+    </tr>
+</table>
+</body>
+</html>
