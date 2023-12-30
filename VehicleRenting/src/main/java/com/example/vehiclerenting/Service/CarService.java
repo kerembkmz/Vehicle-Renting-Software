@@ -156,6 +156,8 @@ public class CarService {
             return false;
         }
 
+
+
         userService.updateUserBalance(userId, -rentalCost);
         car.setAvailable(false);
         carRepository.save(car);

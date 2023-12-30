@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 @Entity
-@Table(name = "rental", schema = "VRS")
+@Table(name = "rentals", schema = "VRS")
 public class Rental {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

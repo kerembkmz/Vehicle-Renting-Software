@@ -5,6 +5,8 @@ import com.example.vehiclerenting.Repositories.RentalRepository;
 import com.example.vehiclerenting.Service.RentalService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import com.example.vehiclerenting.Models.Car;
 import com.example.vehiclerenting.Models.Motorcycle;
@@ -50,19 +52,32 @@ public class UserController {
         return "register_page";
     }
 
+@PostMapping("/checkUsernameAvailability")
+public ResponseEntity<String> checkUsernameAvailability(@RequestParam String username) {
+    if (userService.isUsernameAvailable(username)) {
+        return ResponseEntity.ok("available");
+    } else {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body("exists");
+    }
+}
+
     @PostMapping("/register")
     public String registerUser(@RequestParam String username, @RequestParam String password) {
         int defaultBalance = 0;
+        boolean isUsernameAvailable = userService.isUsernameAvailable(username);
+
+        if (!isUsernameAvailable) {
+            return "redirect:/register?error=UsernameAlreadyInUse";
+        }
+
+
         User registeredUser = userService.registerUser(username, password, defaultBalance);
         if (registeredUser != null) {
-            return "redirect:/renting";
+            return "redirect:/login";
         } else {
             return "redirect:/error?errorMessage=Registration failed. Please try again.";
         }
     }
-
-    // TODO: Errors should be like a pop-up with the error message
-
 
     @GetMapping("/login")
     public String getLoginPage() {
@@ -86,7 +101,7 @@ public class UserController {
                 return "redirect:/renting";
             }
         } else {
-            return "redirect:/error?errorMessage=Login failed. Please try again.";
+            return "redirect:/login?error=WrongCredentials";
         }
     }
 
@@ -142,11 +157,24 @@ public class UserController {
             @RequestParam("vehicleType") String vehicleType,
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            HttpSession session
+            HttpSession session,
+            Model model
 
     ) {
         ModelAndView modelAndView = new ModelAndView();
 
+
+        Long id = (Long) session.getAttribute("userId");
+        Optional<User> loggedInUser = userRepository.findById(id);
+
+        modelAndView.addObject("userBalance", loggedInUser.get().getBalance());
+
+        if (startDate.isAfter(endDate)) {
+            modelAndView = new ModelAndView("renting_page");
+            modelAndView.addObject("error", "Invalid rental date selection.");
+            modelAndView.addObject("userBalance", loggedInUser.get().getBalance());
+            return modelAndView;
+        }
 
         Long userId = (Long) session.getAttribute("userId");
         User user =  userRepository.findById(userId).get();
@@ -181,6 +209,7 @@ public class UserController {
             modelAndView.addObject("error", "Rental process failed.");
         }
 
+        modelAndView.addObject("userId", userId);
         return modelAndView;
     }
     @PostMapping("/admin/users/register")
@@ -305,6 +334,12 @@ public class UserController {
 
         Long id = (Long) session.getAttribute("userId");
         Optional<User> loggedInUser = userRepository.findById(id);
+
+        model.addAttribute("startDate", startDate.toString());
+        model.addAttribute("endDate", endDate.toString());
+
+
+
         if (loggedInUser.isPresent()) {
             Iterable<Car> availableCars = carService.findAvailableCarsWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
             Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);

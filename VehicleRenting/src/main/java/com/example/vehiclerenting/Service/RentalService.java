@@ -36,15 +36,23 @@ public class RentalService {
             int days = (int) ChronoUnit.DAYS.between(startDate, endDate);
             int totalCost = days * car.getPricePerDay();
 
+
+
             User user = userRepository.findById(userId).orElse(null);
-            if (user != null && user.getBalance() >= totalCost) {
-                car.setAvailable(false);
-                carRepository.save(car);
+            if (user != null) {
+                if (user.getBalance() >= totalCost) {
+                    car.setAvailable(false);
+                    carRepository.save(car);
 
-                user.setBalance(user.getBalance() - totalCost);
-                userRepository.save(user);
 
-                return true;
+                    user.setBalance(user.getBalance() - totalCost);
+                    userRepository.save(user);
+
+                    return true;
+                } else {
+                    // Insufficient balance, return false without modifying anything
+                    return false;
+                }
             }
         }
         return false;

@@ -16,6 +16,13 @@
   </style>
 </head>
 <body>
+<div id="errorMessage" style="display: none; background-color: #ff9999; color: #cc0000; padding: 10px; text-align: center; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;">
+  <!-- This span will hold the actual error message -->
+  <span id="errorText"></span>
+  <!-- Add a button to dismiss the error message -->
+  <button onclick="hideErrorMessage()">OK</button>
+</div>
+
 <div class="balance-box" th:text="'Balance: ' + ${userBalance}"></div>
 
 
@@ -38,10 +45,10 @@
 
 <form th:action="@{/search}" method="get">
   <label for="startDate">Start Date:</label>
-  <input type="date" id="startDate" name="startDate" required>
+  <input type="date" id="startDate" name="startDate" th:value="${startDate}" />
 
   <label for="endDate">End Date:</label>
-  <input type="date" id="endDate" name="endDate" required>
+  <input type="date" id="endDate" name="endDate" th:value="${endDate}" />
 
   <label for="brand">Brand:</label>
   <input type="text" id="brand" name="brand">
@@ -115,6 +122,27 @@
 
   });
 
+</script>
+
+<script th:inline="javascript">
+  function showErrorMessage(message) {
+    var errorMessageDiv = document.getElementById("errorMessage");
+    var errorText = document.getElementById("errorText");
+    errorText.innerText = message;
+    errorMessageDiv.style.display = "block";
+  }
+
+  function hideErrorMessage() {
+    var errorMessageDiv = document.getElementById("errorMessage");
+    errorMessageDiv.style.display = "none";
+  }
+
+  /* Check if error message is present in the model and display it */
+  /* Replace '[[${error}]]' with the actual attribute name from your model */
+  var error = /*[[${error}]]*/ '';
+  if (error.trim() !== '') {
+    showErrorMessage(error);
+  }
 </script>
 
 

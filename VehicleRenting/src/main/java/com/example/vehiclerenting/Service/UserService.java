@@ -28,6 +28,10 @@ public class UserService
         this.entityManager = entityManager;
     }
 
+    public boolean isUsernameAvailable(String username) {
+        Optional<User> userOptional = userRepository.findUsersByName(username);
+        return userOptional.isEmpty();
+    }
     public User registerUser(String name, String password, Integer balance){
         if (name == null || password == null || balance == null){
             return null;
