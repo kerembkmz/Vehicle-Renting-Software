@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 
 @Service
@@ -103,6 +105,35 @@ public class UserService
     public List<Rental> getRentalHistory(Long userId) {
         return rentalRepository.findByUser_Id(userId);
     }
+
+
+
+
+@Transactional
+public void addBalance(Long userId, int amount)
+{
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found."));
+
+    if (amount < 0) {
+        throw new IllegalArgumentException("Amount to add cannot be negative.");
+    }
+
+    user.setBalance(user.getBalance() + amount);
+    userRepository.save(user);
+
+}
+
+
+    public int getUserBalance(Long userId) {
+
+        return userRepository.findById(userId)
+
+                .orElseThrow(() -> new NoSuchElementException("User not found."))
+                .getBalance();
+
+    }
+
 
 
 }

@@ -56,7 +56,7 @@ public class CarService {
 
     @Transactional
     public int deleteCarByAttributes(String brand, String color, Integer horsepower, Integer priceperday,
-                                            Boolean available, LocalDate startAvailabilityDate, LocalDate endAvailabilityDate) {
+                                     Boolean available, LocalDate startAvailabilityDate, LocalDate endAvailabilityDate) {
 
         StringBuilder queryBuilder = new StringBuilder("DELETE FROM Car m WHERE 1 = 1");
 

@@ -78,6 +78,7 @@ public class UserController {
         User loggedInUser = userService.authenticate(username, password);
         if (loggedInUser != null) {
             session.setAttribute("userId", loggedInUser.getId());
+
             if ("admin".equals(loggedInUser.getName())) {
                 return "redirect:/adminPage";
             } else {
@@ -91,6 +92,7 @@ public class UserController {
 
     @GetMapping("/renting")
     public String getRentingPage(Model model, HttpSession session) {
+
         Long id = (Long) session.getAttribute("userId");
         Optional<User> loggedInUser = userRepository.findById(id);
         if (loggedInUser.isPresent()) {
@@ -107,12 +109,12 @@ public class UserController {
 
     @PostMapping("/admin/motorcycles/create")
     public String createMotorcycle(@RequestParam String brand,
-                            @RequestParam String color,
-                            @RequestParam Integer horsepower,
-                            @RequestParam Integer priceperday,
-                            @RequestParam Boolean available,
-                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
-                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
+                                   @RequestParam String color,
+                                   @RequestParam Integer horsepower,
+                                   @RequestParam Integer priceperday,
+                                   @RequestParam Boolean available,
+                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
+                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
 
 
 
@@ -211,34 +213,34 @@ public class UserController {
 
 
 
-            Car car = new Car();
-            car.setBrand(brand);
-            car.setColor(color);
-            car.setHorsepower(horsepower);
-            car.setPricePerDay(priceperday);
-            car.setAvailable(available);
-            car.setStartAvailabilityDate(startAvailabilityDate);
-            car.setEndAvailabilityDate(endAvailabilityDate);
+        Car car = new Car();
+        car.setBrand(brand);
+        car.setColor(color);
+        car.setHorsepower(horsepower);
+        car.setPricePerDay(priceperday);
+        car.setAvailable(available);
+        car.setStartAvailabilityDate(startAvailabilityDate);
+        car.setEndAvailabilityDate(endAvailabilityDate);
 
-            Car savedCar = carService.saveCar(car);
-            if (savedCar != null){
-                return "redirect:/adminPage?carCreated=true";
-            }
-            else{
-                return "redirect:/adminPage?carCreated=false";
-            }
+        Car savedCar = carService.saveCar(car);
+        if (savedCar != null){
+            return "redirect:/adminPage?carCreated=true";
+        }
+        else{
+            return "redirect:/adminPage?carCreated=false";
+        }
 
     }
 
     @PostMapping("/admin/motorcycles/delete")
     public String deleteMotorcycleByAttributes(
-                                               @RequestParam(required = false) String brand,
-                                               @RequestParam(required = false) String color,
-                                               @RequestParam(required = false) Integer horsepower,
-                                               @RequestParam(required = false) Integer priceperday,
-                                               @RequestParam(required = false) Boolean available,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) Integer horsepower,
+            @RequestParam(required = false) Integer priceperday,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
 
 
         int deletedMotorcycleNum = motorcycleService.deleteMotorcycleByAttributes(brand, color, horsepower, priceperday, available, startAvailabilityDate, endAvailabilityDate);
@@ -251,13 +253,13 @@ public class UserController {
     }
     @PostMapping("/admin/cars/delete")
     public String deleteCarByAttributes(
-                                               @RequestParam(required = false) String brand,
-                                               @RequestParam(required = false) String color,
-                                               @RequestParam(required = false) Integer horsepower,
-                                               @RequestParam(required = false) Integer priceperday,
-                                               @RequestParam(required = false) Boolean available,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
-                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) Integer horsepower,
+            @RequestParam(required = false) Integer priceperday,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
 
 
         int deletedCarNum = carService.deleteCarByAttributes(brand, color, horsepower, priceperday, available, startAvailabilityDate, endAvailabilityDate);
@@ -324,6 +326,22 @@ public class UserController {
         model.addAttribute("rentalHistory", rentalHistory);
 
         return "rental_history";
+    }
+
+
+    @PostMapping("/addBalance")
+    public String addBalance(HttpSession session, @RequestParam int amount, RedirectAttributes redirectAttrs) {
+
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            redirectAttrs.addFlashAttribute("error", "User not found.");
+            return "redirect:/renting";
+        }
+
+        userService.addBalance(userId, amount);
+
+        return "redirect:/renting";
     }
 
 }

@@ -59,7 +59,7 @@ public class MotorcycleService {
 
     @Transactional
     public int deleteMotorcycleByAttributes(String brand, String color, Integer horsepower, Integer priceperday,
-                                             Boolean available, LocalDate startAvailabilityDate, LocalDate endAvailabilityDate) {
+                                            Boolean available, LocalDate startAvailabilityDate, LocalDate endAvailabilityDate) {
 
         StringBuilder queryBuilder = new StringBuilder("DELETE FROM Motorcycle m WHERE 1 = 1");
 
@@ -173,3 +173,7 @@ public class MotorcycleService {
 
 
 }
+
+
+
+

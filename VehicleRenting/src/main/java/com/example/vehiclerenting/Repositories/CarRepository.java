@@ -23,8 +23,10 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     List<String> findDistinctColor();
 
     @Query("SELECT DISTINCT c.horsepower FROM Car c")
-     List<String> findDistincthorsePower();
+    List<String> findDistincthorsePower();
 
 }
+
+
 
 
