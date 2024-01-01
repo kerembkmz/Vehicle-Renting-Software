@@ -265,6 +265,17 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         return "rental_history";
     }
 
+    @GetMapping("/all_rental_history")
+    public String getAllRentalHistory(Model model, HttpSession session) {
+
+
+        List<Rental> rentalHistory = rentalRepository.findAll();
+
+        model.addAttribute("rentalHistory", rentalHistory);
+
+        return "rental_history";
+    }
+
 
     @PostMapping("/addBalance")
     public String addBalance(HttpSession session, @RequestParam int amount, RedirectAttributes redirectAttrs) {
