@@ -337,6 +337,15 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
 
         model.addAttribute("startDate", startDate.toString());
         model.addAttribute("endDate", endDate.toString());
+        model.addAttribute("brand", brand.toString());
+        model.addAttribute("color", color.toString());
+        if (minHorsepower != null) {
+            model.addAttribute("minHorsepower", minHorsepower.toString());
+        }
+        if (maxPricePerDay != null) {
+            model.addAttribute("maxPricePerDay", maxPricePerDay.toString());
+        }
+
 
 
 
@@ -350,6 +359,21 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         } else {
             return "redirect:/error?errorMessage=User not found";
         }
+    }
+
+    @PostMapping("/removeFilters")
+    public String removeFilters(HttpSession session, Model model) {
+        session.removeAttribute("startDate");
+        session.removeAttribute("endDate");
+        session.removeAttribute("brand");
+        session.removeAttribute("color");
+        session.removeAttribute("minHorsepower");
+        session.removeAttribute("maxPricePerDay");
+
+        Long id = (Long) session.getAttribute("userId");
+        Optional<User> loggedInUser = userRepository.findById(id);
+        model.addAttribute("userBalance", loggedInUser.get().getBalance());
+        return "renting_page";
     }
 
     @GetMapping("/rental_history")
