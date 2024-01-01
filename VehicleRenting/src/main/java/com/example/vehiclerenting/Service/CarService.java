@@ -45,9 +45,7 @@ public class CarService {
         return carRepository.save(car);
     }
 
-    public void deleteCarById(Long id) {
-        carRepository.deleteById(id);
-    }
+
 
     public Iterable<Car> findAvailableCarsByDateRange(LocalDate startDate, LocalDate endDate) {
 
@@ -125,50 +123,4 @@ public class CarService {
         return availableCars;
     }
 
-    public List<String> getAvailableBrands() {
-        return carRepository.findDistinctBrands();
-    }
-    public List<String> getAvailableColor() {
-        return carRepository.findDistinctColor();
-    }
-    public List<String> horsePower() {
-        return carRepository.findDistincthorsePower();
-    }
-
-    public Integer getDailyRateById(Long carId) {
-        Optional<Car> car = carRepository.findById(carId);
-        if (car.isPresent()) {
-            return car.get().getPricePerDay();
-        } else {
-            throw new IllegalStateException("Car with the specified ID not found");
-        }
-    }
-    public boolean rentCar(Long carId, LocalDate startDate, LocalDate endDate, Long userId) {
-        Optional<Car> carOpt = carRepository.findById(carId);
-        if (carOpt.isEmpty() || !carOpt.get().isAvailable()) {
-            return false;
-        }
-
-        Car car = carOpt.get();
-        int rentalCost = getDailyRateById(carId) * (int) ChronoUnit.DAYS.between(startDate, endDate);
-
-        if (!userService.checkUserBalance(userId, rentalCost)) {
-            return false;
-        }
-
-
-
-        userService.updateUserBalance(userId, -rentalCost);
-        car.setAvailable(false);
-        carRepository.save(car);
-
-        Rental rental = new Rental();
-        rental.setCarId(carId);
-        rental.setUserId(userId);
-        rental.setStartDate(startDate);
-        rental.setEndDate(endDate);
-        rentalRepository.save(rental);
-
-        return true;
-    }
 }

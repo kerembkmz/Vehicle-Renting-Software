@@ -47,10 +47,6 @@ public class MotorcycleService {
         return motorcycleRepository.save(motorcycle);
     }
 
-    public void deleteMotorcycleById(Long id) {
-        motorcycleRepository.deleteById(id);
-    }
-
     public Iterable<Motorcycle> findAvailableMotorcyclesByDateRange(LocalDate startDate, LocalDate endDate) {
 
         return motorcycleRepository.findAvailableMotorcyclesBetweenDates(startDate, endDate);
@@ -135,41 +131,7 @@ public class MotorcycleService {
         return availableMotorcycles;
     }
 
-    public Integer getDailyRateById(Long motorcycleId) {
-        Optional<Motorcycle> motorcycle = motorcycleRepository.findById(motorcycleId);
-        if (motorcycle.isPresent()) {
-            return motorcycle.get().getPricePerDay();
-        } else {
-            throw new IllegalStateException("Motorcycle with the specified ID not found");
-        }
-    }
 
-    public boolean rentMotorcycle(Long motorcycleId, LocalDate startDate, LocalDate endDate, Long userId) {
-        Optional<Motorcycle> motorcycleOpt = motorcycleRepository.findById(motorcycleId);
-        if (motorcycleOpt.isEmpty() || !motorcycleOpt.get().isAvailable()) {
-            return false;
-        }
-
-        Motorcycle motorcycle = motorcycleOpt.get();
-        int rentalCost = getDailyRateById(motorcycleId) * (int) ChronoUnit.DAYS.between(startDate, endDate);
-
-        if (!userService.checkUserBalance(userId, rentalCost)) {
-            return false;
-        }
-
-        userService.updateUserBalance(userId, -rentalCost);
-        motorcycle.setAvailable(false);
-        motorcycleRepository.save(motorcycle);
-
-        Rental rental = new Rental();
-        rental.setMotorcycleId(motorcycleId);
-        rental.setUserId(userId);
-        rental.setStartDate(startDate);
-        rental.setEndDate(endDate);
-        rentalRepository.save(rental);
-
-        return true;
-    }
 
 
 }

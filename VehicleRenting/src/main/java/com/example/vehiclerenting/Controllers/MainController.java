@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-public class UserController {
+public class MainController {
 
     private final UserRepository userRepository;
     private final RentalRepository rentalRepository;
@@ -38,7 +38,7 @@ public class UserController {
     private final RentalService rentalService;
 
     @Autowired
-    public UserController(UserRepository userRepository, RentalRepository rentalRepository, UserService userService, CarService carService, MotorcycleService motorcycleService, RentalService rentalService) {
+    public MainController(UserRepository userRepository, RentalRepository rentalRepository, UserService userService, CarService carService, MotorcycleService motorcycleService, RentalService rentalService) {
         this.userRepository = userRepository;
         this.rentalRepository = rentalRepository;
         this.userService = userService;
@@ -84,9 +84,9 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         return "login_page";
     }
 
+
     @GetMapping("/adminPage")
     public String getAdminPage() {return "admin_page"; }
-
 
     @PostMapping("/login")
     public String loginUser(@RequestParam String username, @RequestParam String password, RedirectAttributes redirectAttrs, HttpSession session) {
@@ -122,35 +122,7 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         }
     }
 
-    @PostMapping("/admin/motorcycles/create")
-    public String createMotorcycle(@RequestParam String brand,
-                                   @RequestParam String color,
-                                   @RequestParam Integer horsepower,
-                                   @RequestParam Integer priceperday,
-                                   @RequestParam Boolean available,
-                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
-                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
 
-
-
-        Motorcycle motorcycle = new Motorcycle();
-        motorcycle.setBrand(brand);
-        motorcycle.setColor(color);
-        motorcycle.setHorsepower(horsepower);
-        motorcycle.setPricePerDay(priceperday);
-        motorcycle.setAvailable(available);
-        motorcycle.setStartAvailabilityDate(startAvailabilityDate);
-        motorcycle.setEndAvailabilityDate(endAvailabilityDate);
-
-        Motorcycle savedMotorcycle = motorcycleService.saveMotorcycle(motorcycle);
-        if (savedMotorcycle != null){
-            return "redirect:/adminPage?motorcycleCreated=true";
-        }
-        else{
-            return "redirect:/adminPage?motorcycleCreated=false";
-        }
-
-    }
     @PostMapping("/rentVehicle")
     public ModelAndView rentVehicle(
             @RequestParam("vehicleId") Long vehicleId,
@@ -212,6 +184,103 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         modelAndView.addObject("userId", userId);
         return modelAndView;
     }
+
+
+
+
+
+
+
+
+
+    @GetMapping("/search")
+    public String searchAvailableCars(
+            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(value = "brand", required = false) String brand,
+            @RequestParam(value = "color", required = false) String color,
+            @RequestParam(value = "minHorsepower", required = false) Integer minHorsepower,
+            @RequestParam(value = "maxPricePerDay", required = false) Integer maxPricePerDay,
+            @RequestParam(value = "availability", required = false) String availabilityParam,
+            HttpSession session,
+            Model model) {
+
+        Boolean availability = null;
+        if (availabilityParam != null && !availabilityParam.isEmpty()) {
+            availability = Boolean.parseBoolean(availabilityParam); // Convert to Boolean
+        }
+
+        Long id = (Long) session.getAttribute("userId");
+        Optional<User> loggedInUser = userRepository.findById(id);
+
+        model.addAttribute("startDate", startDate.toString());
+        model.addAttribute("endDate", endDate.toString());
+        model.addAttribute("brand", brand.toString());
+        model.addAttribute("color", color.toString());
+        if (minHorsepower != null) {
+            model.addAttribute("minHorsepower", minHorsepower.toString());
+        }
+        if (maxPricePerDay != null) {
+            model.addAttribute("maxPricePerDay", maxPricePerDay.toString());
+        }
+
+
+
+
+        if (loggedInUser.isPresent()) {
+            Iterable<Car> availableCars = carService.findAvailableCarsWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
+            Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
+            model.addAttribute("userBalance", loggedInUser.get().getBalance());
+            model.addAttribute("availableCars", availableCars);
+            model.addAttribute("availableMotors", availableMotorcycles);
+            return "renting_page";
+        } else {
+            return "redirect:/error?errorMessage=User not found";
+        }
+    }
+
+    @PostMapping("/removeFilters")
+    public String removeFilters(HttpSession session, Model model) {
+        session.removeAttribute("startDate");
+        session.removeAttribute("endDate");
+        session.removeAttribute("brand");
+        session.removeAttribute("color");
+        session.removeAttribute("minHorsepower");
+        session.removeAttribute("maxPricePerDay");
+
+        Long id = (Long) session.getAttribute("userId");
+        Optional<User> loggedInUser = userRepository.findById(id);
+        model.addAttribute("userBalance", loggedInUser.get().getBalance());
+        return "renting_page";
+    }
+
+    @GetMapping("/rental_history")
+    public String getRentalHistory(Model model, HttpSession session) {
+        Long user_id = (Long) session.getAttribute("userId");
+
+        List<Rental> rentalHistory = rentalRepository.findByUser_Id(user_id);
+
+        model.addAttribute("rentalHistory", rentalHistory);
+
+        return "rental_history";
+    }
+
+
+    @PostMapping("/addBalance")
+    public String addBalance(HttpSession session, @RequestParam int amount, RedirectAttributes redirectAttrs) {
+
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            redirectAttrs.addFlashAttribute("error", "User not found.");
+            return "redirect:/renting";
+        }
+
+        userService.addBalance(userId, amount);
+
+        return "redirect:/renting";
+    }
+
     @PostMapping("/admin/users/register")
     public String registerUser(@RequestParam String username,
                                @RequestParam String password,
@@ -230,7 +299,20 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
         }
     }
 
+    @PostMapping("/admin/users/delete")
+    public String deleteUsersByAttributes(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String password,
+            @RequestParam(required = false) Integer balance) {
 
+        boolean deletedUser = userService.deleteUserByAttributes(username, password, balance);
+
+        if (deletedUser) {
+            return "redirect:/adminPage?userDeleted=true";
+        } else {
+            return "redirect:/adminPage?userDeleted=false";
+        }
+    }
     @PostMapping("/admin/cars/create")
     public String createCar(@RequestParam String brand,
                             @RequestParam String color,
@@ -261,6 +343,35 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
 
     }
 
+    @PostMapping("/admin/motorcycles/create")
+    public String createMotorcycle(@RequestParam String brand,
+                                   @RequestParam String color,
+                                   @RequestParam Integer horsepower,
+                                   @RequestParam Integer priceperday,
+                                   @RequestParam Boolean available,
+                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startAvailabilityDate,
+                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endAvailabilityDate) {
+
+
+
+        Motorcycle motorcycle = new Motorcycle();
+        motorcycle.setBrand(brand);
+        motorcycle.setColor(color);
+        motorcycle.setHorsepower(horsepower);
+        motorcycle.setPricePerDay(priceperday);
+        motorcycle.setAvailable(available);
+        motorcycle.setStartAvailabilityDate(startAvailabilityDate);
+        motorcycle.setEndAvailabilityDate(endAvailabilityDate);
+
+        Motorcycle savedMotorcycle = motorcycleService.saveMotorcycle(motorcycle);
+        if (savedMotorcycle != null){
+            return "redirect:/adminPage?motorcycleCreated=true";
+        }
+        else{
+            return "redirect:/adminPage?motorcycleCreated=false";
+        }
+
+    }
     @PostMapping("/admin/motorcycles/delete")
     public String deleteMotorcycleByAttributes(
             @RequestParam(required = false) String brand,
@@ -298,85 +409,6 @@ public ResponseEntity<String> checkUsernameAvailability(@RequestParam String use
             return "redirect:/adminPage?motorcycleDeleted=false";
         }
 
-    }
-
-    @PostMapping("/admin/users/delete")
-    public String deleteUsersByAttributes(
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String password,
-            @RequestParam(required = false) Integer balance) {
-
-        boolean deletedUser = userService.deleteUserByAttributes(username, password, balance);
-
-        if (deletedUser) {
-            return "redirect:/adminPage?userDeleted=true";
-        } else {
-            return "redirect:/adminPage?userDeleted=false";
-        }
-    }
-
-    @GetMapping("/search")
-    public String searchAvailableCars(
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(value = "brand", required = false) String brand,
-            @RequestParam(value = "color", required = false) String color,
-            @RequestParam(value = "minHorsepower", required = false) Integer minHorsepower,
-            @RequestParam(value = "maxPricePerDay", required = false) Integer maxPricePerDay,
-            @RequestParam(value = "availability", required = false) String availabilityParam,
-            HttpSession session,
-            Model model) {
-
-        Boolean availability = null;
-        if (availabilityParam != null && !availabilityParam.isEmpty()) {
-            availability = Boolean.parseBoolean(availabilityParam); // Convert to Boolean
-        }
-
-        Long id = (Long) session.getAttribute("userId");
-        Optional<User> loggedInUser = userRepository.findById(id);
-
-        model.addAttribute("startDate", startDate.toString());
-        model.addAttribute("endDate", endDate.toString());
-
-
-
-        if (loggedInUser.isPresent()) {
-            Iterable<Car> availableCars = carService.findAvailableCarsWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
-            Iterable<Motorcycle> availableMotorcycles = motorcycleService.findAvailableMotorcyclesWithFilters(startDate, endDate, brand, color, minHorsepower, maxPricePerDay, availability);
-            model.addAttribute("userBalance", loggedInUser.get().getBalance());
-            model.addAttribute("availableCars", availableCars);
-            model.addAttribute("availableMotors", availableMotorcycles);
-            return "renting_page";
-        } else {
-            return "redirect:/error?errorMessage=User not found";
-        }
-    }
-
-    @GetMapping("/rental_history")
-    public String getRentalHistory(Model model, HttpSession session) {
-        Long user_id = (Long) session.getAttribute("userId");
-
-        List<Rental> rentalHistory = rentalRepository.findByUser_Id(user_id);
-
-        model.addAttribute("rentalHistory", rentalHistory);
-
-        return "rental_history";
-    }
-
-
-    @PostMapping("/addBalance")
-    public String addBalance(HttpSession session, @RequestParam int amount, RedirectAttributes redirectAttrs) {
-
-        Long userId = (Long) session.getAttribute("userId");
-
-        if (userId == null) {
-            redirectAttrs.addFlashAttribute("error", "User not found.");
-            return "redirect:/renting";
-        }
-
-        userService.addBalance(userId, amount);
-
-        return "redirect:/renting";
     }
 
 }

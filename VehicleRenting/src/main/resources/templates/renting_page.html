@@ -51,16 +51,17 @@
   <input type="date" id="endDate" name="endDate" th:value="${endDate}" />
 
   <label for="brand">Brand:</label>
-  <input type="text" id="brand" name="brand">
+  <input type="text" id="brand" name="brand" th:value="${brand}" />
 
   <label for="color">Color:</label>
-  <input type="text" id="color" name="color">
+  <input type="text" id="color" name="color" th:value="${color}" />
 
   <label for="minHorsepower">Min Horsepower:</label>
-  <input type="number" id="minHorsepower" name="minHorsepower">
+  <input type="number" id="minHorsepower" name="minHorsepower" th:value="${minHorsepower}" />
 
   <label for="maxPricePerDay">Max Price per Day:</label>
-  <input type="number" id="maxPricePerDay" name="maxPricePerDay">
+  <input type="number" id="maxPricePerDay" name="maxPricePerDay" th:value="${maxPricePerDay}" />
+
 
   <label for="availability">Availability:</label>
   <select id="availability" name="availability">
@@ -69,6 +70,10 @@
   </select>
 
   <button type="submit">Search</button>
+</form>
+
+<form action="/removeFilters" method="post">
+  <button type="submit">Remove Filters</button>
 </form>
 
 <ul>
